@@ -22,6 +22,7 @@ def save_chat_log(user_input, bot_response, category="미지정", user_id = "ano
         "timestamp": datetime.now().isoformat(),
         "user": user_input,
         "bot": bot_response,
-        "category": category
+        "category": category,
+        "user_id": user_id
     }
     collection.insert_one(log_entry)  # <- 이게 저장하는 코드

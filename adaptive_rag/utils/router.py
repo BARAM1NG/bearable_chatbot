@@ -44,16 +44,25 @@ Use the following routing rules:
 
 - If the question is about how the 고교학점제 is operated—such as graduation requirements, subject completion standards, school-level implementation, course registration, or the 성취평가제—use the **search_policy** tool.
 
-- If the question is about specific school subjects—such as what is taught in each subject, subject selection criteria, subject classification (예: 일반 선택, 진로 선택), or recommended subjects based on career interests—use the **search_subject** tool.
+- If it's a question about a particular school subject
+  The content taught in each subject, subject selection criteria, subject classification, subject-related activities and 세특(세부특기 능력사항항),
+  (e.g., general choice, career choice), recommended subject based on career interest,
+  Alternatively, the **subject grade calculation method (e.g., grading system, achievement)** — use the **search_subject** tool.
 
 - If the question asks about university admissions or majors—such as what departments exist, what a certain major is about or teaches, what "계열" (academic tracks) are available, how entrance exams work, or how to prepare for 전형 types like 수시, 정시, 학과 and 학종—use the **search_admission** tool. For example, questions like “What do you learn in 호텔경영학과?” or “Tell me about 서울대 경영학과” belong here.
-               and if the user asks about a university, such as in "신한대학교에 대해 알려줘", extract only the key term immediately preceding "대학교" or "대" (e.g., "신한") and use it as the core search keyword.
+  and if the user asks about a university, such as in "신한대학교에 대해 알려줘", extract only the key term immediately preceding "대학교" or "대" (e.g., "신한") and use it as the core search keyword.
 
 - If the question asks for book recommendations or summaries related to specific majors, subjects, or academic interests, use the **search_book** tool.
 
-- If the question is about how to use the chatbot or about issues related to the MyFolio service, use the **search_service** tool.
-
-- If the user's input includes keywords such as "세특", "수행평가", "주제", or phrases asking "what should I do", assume they are asking for a topic suggestion. In those cases, respond with the link: "다음 링크에서 세특 주제를 추천받을 수 있습니다. https://myfolio.im/seteuk"
+- If the question is about how to use the chatbot or about issues related to the MyFolio(마이폴리오) service, use the **search_service** tool.  
+  This includes questions about or related to MyFolio’s features such as:  
+  - 세부능력 및 특기사항 추천 서비스  
+  - 생활기록부 로드맵  
+  - 독서 추천  
+    Examples of questions that fall into this category:  
+  - “세부능력 및 특기사항 추천 서비스 결제했는데 결과를 어디서 볼 수 있어?”  
+  - “생활기록부 로드맵 어떻게 사용하는거야?”  
+  - “생활기록부 로드맵 금액별로 어떻게 다른거야?”
 
 Always choose the single most relevant tool that best matches the user's intent.
 """)

@@ -29,7 +29,7 @@ def rephrase_question_with_history(memory, current_question):
     ])
 
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "아래는 유저와의 대화 기록이야. 최근 질문을 더 구체적으로 바꿔줘."),
+        ("system", "당신은 고도의 대화 이해 및 재작성 전문가입니다.아래 대화 이력을 꼼꼼히 분석하여, 사용자의 원래 의도를 온전히 반영하면서 핵심 정보를 보강하고 자연스럽고 간결한 질문으로 재작성해 주세요."),
         ("human", f"대화 기록:\n{history_text}\n\n질문: {current_question}\n\n보완된 질문:")
     ])
 

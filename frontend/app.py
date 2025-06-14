@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import uuid
 import os
+import time
 
 # 이 파일(app.py) 위치 기준
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,64 +24,106 @@ def load_css(file_name: str):
 
 load_css("style.css")
 
-# --- Logo and Title ---
-# Centered logo and initial message
-try:
-    # 간단하고 확실한 중앙 정렬 방법
-    st.markdown("""
-    <div style='
-        text-align: center;
-        width: 100%;
-        margin: 2rem 0;
-    '>
-    """, unsafe_allow_html=True)
-    
-    # 로고를 중앙에 배치
-    logo_path = os.path.join(BASE_DIR, "asset", "mypolio.png")
-    col1, col2, col3 = st.columns([1.7, 1, 1.5])
-    with col2:
-        st.image(logo_path, width=100)
-    
-    # 제목들도 중앙 정렬로 배치
-    st.markdown("""
-        <h1 style='color: #FFFFFF; font-size: 24px; font-weight: bold; margin: 1rem 0 0.5rem 0; text-align: center;'>안녕하세요!</h1>
-        <h2 style='color: #FFFFFF; font-size: 18px; margin: 0 0 2rem 0; text-align: center;'>마이폴리오 AI 챗봇입니다</h2>
+# --- 세션 상태 초기화 및 타임아웃 설정 ---
+if 'last_activity' not in st.session_state:
+    st.session_state.last_activity = time.time()
+if 'timeout_message_shown' not in st.session_state:
+    st.session_state.timeout_message_shown = False
+
+# 세션 타임아웃: 5분 이상 활동이 없으면 대화 기록 초기화
+if time.time() - st.session_state.last_activity > 300 and not st.session_state.timeout_message_shown:
+    # 대화 기록 초기화
+    st.session_state.messages = []
+    st.session_state.stage = "initial"
+    st.session_state.category = None
+    st.session_state.show_reset = False
+
+    # 시스템 메시지 형태로 안내 추가
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": "💬 5분 동안 활동이 없어 챗봇 세션이 자동으로 종료되었습니다. 추가 문의가 있으시면 새 질문을 입력해주세요."
+    })
+    st.session_state.timeout_message_shown = True
+    st.rerun()
+
+st.markdown(
+    f"""
+    <div style="text-align:center; margin:2rem 0;">
+      <h1 style="font-size:24px; font-weight:bold; margin:1rem 0 0.3rem;">안녕하세요!</h1>
+      <h2 style="font-size:18px; margin:0 0 1rem;">마이폴리오 AI 챗봇입니다</h2>
+      <p><strong>문의 유형 안내</strong></p>
+      <ul style="text-align:left; display:inline-block; line-height:1.6;">
+        <li><strong>운영 문의</strong>: 제도, 졸업 요건, 교과 이수 기준 등</li>
+        <li><strong>과목 선택</strong>: 과목 소개, 게열/진로별 추천과목 정보 등</li>
+        <li><strong>입시 연계</strong>: 입시 전형 개념, 대학/학과 소개 정보 등</li>
+        <li><strong>도서 추천</strong>: 진로 맞춤 책 소개</li>
+        <li><strong>고객 문의</strong>: 시스템 오류 등</li>
+      </ul>
+      <p style="margin-top:1.5rem; font-size:13px; color:#888;">
+        ※ 챗봇의 답변은 참고용이며, 정확한 정보는 교육청 공식 채널을 통해 확인해 주세요.
+      </p>
     </div>
-    """, unsafe_allow_html=True)
-    
+    """,
+    unsafe_allow_html=True
+)
+
 except FileNotFoundError:
-    st.warning("로고 이미지를 \'frontend/asset/mypolio.png\'에서 찾을 수 없습니다.")
+    st.warning("로고 이미지를 찾을 수 없습니다:")
 
-# Remove the default Streamlit title as we are using markdown for title
-# st.title("Bearable Chatbot") 
+# 하단 우측 고정 라이선스 및 출처 표시
+st.markdown(
+    """
+    <div style="
+        position: fixed;
+        bottom: 0.5rem;
+        right: 1rem;
+        color: #888888;
+        font-size: 0.6rem;
+        text-align: right;
+        line-height: 1.2;
+        z-index: 999;
+    ">
+        © 2024 Smilegate AI. Korean UnSmile Dataset 및 baseline 모델은  
+        <a href="https://github.com/smilegate-ai/korean_unsmile_dataset" target="_blank" style="color: #888888; text-decoration: underline;">
+        GitHub 저장소</a>에서 Apache License 2.0 하에 공개되어 있습니다.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-
-# Initialize session state variables if they don't exist
+# 세션 상태 초기화
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if 'user_id' not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 if "stage" not in st.session_state:
-    st.session_state.stage = "initial"  # Stages: initial, main_selected, sub_selected, chatting
+    st.session_state.stage = "initial"
 if "category" not in st.session_state:
     st.session_state.category = None
+if "show_reset" not in st.session_state:
+    st.session_state.show_reset = False
 
-# --- Button Interaction Logic ---
+# ← 여기에 추가
+if "pending" not in st.session_state:
+    st.session_state.pending = False
+if "pending_prompt" not in st.session_state:
+    st.session_state.pending_prompt = ""
 
-categories =  ["운영문의", "과목문의", "입시문의", "도서문의", "서비스 문의"]
-
+# 카테고리 목록
+categories = ["운영 문의", "과목 선택", "입시 연계", "도서 추천", "고객 문의"]
 
 def handle_category_selection(category_name):
     st.session_state.category = category_name
-    # 서비스 문의인 경우 외부 링크 안내 후 초기 상태로 복귀
-    if category_name == "서비스 문의":
+    st.session_state.show_reset = False
+    st.session_state.timeout_message_shown = False
+    st.session_state.last_activity = time.time()
+    if category_name == "고객 문의":
         st.session_state.messages.append({"role": "user", "content": category_name})
         st.session_state.messages.append({
             "role": "assistant",
-            "content": f"'{category_name}' 관련 문의는 [링크](https://myfolio.im/contents/collegeInfo)하단의 채널톡을 이용해주세요."
+            "content": f"'{category_name}' 관련 문의는 [링크](myfolio.channel.io)를 통해 전달해주세요."
         })
-        # 새 탭으로 열기 스크립트
-        js_open = "<script>window.open('https://myfolio.im/contents/collegeInfo','_blank');</script>"
+        js_open = "<script>window.open('myfolio.channel.io','_blank');</script>"
         st.markdown(js_open, unsafe_allow_html=True)
         st.session_state.stage = "initial"
     else:
@@ -92,72 +135,76 @@ def handle_category_selection(category_name):
         })
     st.rerun()
 
-# --- Message Display and Interaction Logic ---
-
-# Display initial greeting (now part of logo/title section)
+# 초기 화면: 카테고리 선택
 if st.session_state.stage == "initial":
     if not st.session_state.messages:
-        # The initial "안녕하세요! 마이폴리오 AI 챗봇입니다" is now above the buttons.
-        # The first assistant message in chat will be "무엇을 도와드릴까요?"
         st.session_state.messages.append({
-            "role": "assistant", 
-            "content": "무엇을 도와드릴까요?"
+            "role": "assistant",
+            "content": (
+                "안녕하세요! 당신을 위한 입시 도우미, 마폴이 입니다.\n"
+                "아래 카테고리를 선택하고 질문을 입력해주세요😊\n"
+                "희망하는 진로와 학년을 함께 물어보면 더 정확한 정보를 드릴 수 있어요!"
+            )
         })
-
-    # Display chat messages (which will include the "무엇을 도와드릴까요?")
-    for message in st.session_state.messages:
-        avatar_img = logo_path if message["role"] == "assistant" else None
-        with st.chat_message(message["role"], avatar=avatar_img):
-            st.markdown(message["content"])
-    
-    # Main category buttons
-    cols = st.columns(len(categories))
-    for i, category in enumerate(categories):
-        if cols[i].button(category, key=f"{category}", use_container_width=True):
-            handle_category_selection(category)
-    st.stop()
-
-# 채팅 화면: 메시지 표시 + 입력
-if st.session_state.stage == "chatting":
     for msg in st.session_state.messages:
-        avatar = os.path.join(BASE_DIR, "asset", "mypolio.png") if msg["role"] == "assistant" else None
+        avatar = logo_path if msg["role"] == "assistant" else None
         with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
-            if msg["role"] == "assistant" and msg.get("documents"):
+    cols = st.columns(len(categories))
+    for i, cat in enumerate(categories):
+        if cols[i].button(cat, key=f"cat_{i}", use_container_width=True):
+            handle_category_selection(cat)
+    st.stop()
+
+# 채팅 화면
+if st.session_state.stage == "chatting":
+    # 대화 이력 렌더링
+    for msg in st.session_state.messages:
+        avatar = logo_path if msg["role"] == "assistant" else None
+        with st.chat_message(msg["role"], avatar=avatar):
+            st.markdown(msg["content"])
+            if msg.get("documents"):
                 with st.expander("참고 문서 보기", expanded=False):
                     for doc in msg["documents"]:
                         source = doc.get("metadata", {}).get("source", "N/A")
-                        content = doc.get("page_content", "")
                         st.markdown(f"**출처:** {source}")
-                        st.caption(content)
+                        st.caption(doc.get("page_content", ""))
                         st.divider()
-
-
-    # 사용자 입력
-    prompt = st.chat_input("마이폴리오 AI에게 무엇이든 물어보세요!", disabled=False)
+    # 사용자 입력 및 즉시 표시
+    prompt = st.chat_input("마이폴리오 AI에게 무엇이든 물어보세요!")
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
-        try:
-            payload = {
-                "question": prompt,
-                "user_id": st.session_state.user_id,
-                "category": st.session_state.category
-            }
-            res = requests.post("http://localhost:8000/chat/", json=payload)
-            res.raise_for_status()
-            data = res.json()
-            answer = data.get("answer", "죄송합니다. 응답을 받지 못했습니다.")
-            docs = data.get("documents", [])
-            assistant_msg = {"role": "assistant", "content": answer}
-            if docs:
-                assistant_msg["documents"] = docs
-            st.session_state.messages.append(assistant_msg)
-
-        except requests.exceptions.RequestException as e:
-            st.error(f"백엔드 연결 오류: {e}")
-            st.session_state.messages.append({"role": "assistant", "content": f"오류: 백엔드 연결에 실패했습니다. {e}"})
-        except Exception as e:
-            st.error(f"예상치 못한 오류 발생: {e}")
-            st.session_state.messages.append({"role": "assistant", "content": f"오류: 예상치 못한 오류가 발생했습니다. {e}"})
-    
+        st.session_state.pending = True
+        st.session_state.pending_prompt = prompt
+        st.session_state.last_activity = time.time()
         st.rerun()
+
+    # pending일 때 답변 생성
+    if st.session_state.get("pending", False):
+        with st.spinner("답변을 생성하는 중입니다. 잠시만 기다려주세요…"):
+            try:
+                payload = {
+                    "question": st.session_state.pending_prompt,
+                    "user_id": st.session_state.user_id,
+                    "category": st.session_state.category
+                }
+                res = requests.post("http://localhost:8000/chat/", json=payload)
+                res.raise_for_status()
+                data = res.json()
+                assistant_msg = {"role": "assistant", "content": data.get("answer", "")}  
+                if docs := data.get("documents"):
+                    assistant_msg["documents"] = docs
+                st.session_state.messages.append(assistant_msg)
+                st.session_state.show_reset = True
+            except Exception as e:
+                st.error(f"오류 발생: {e}")
+            finally:
+                st.session_state.pending = False
+        st.rerun()
+
+    # Q&A 완료 후 재선택 버튼
+    if st.session_state.show_reset:
+        if st.button("🔄 카테고리 재선택"):
+            st.session_state.stage = "initial"
+            st.session_state.show_reset = False
+            st.rerun()
