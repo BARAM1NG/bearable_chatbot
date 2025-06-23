@@ -22,7 +22,7 @@ openai_api_key = os.environ.get('OPENAI_API_KEY')
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
 
 def rephrase_question_with_history(memory, current_question):
-    history = memory.chat_memory.messages[-3:]  # 최근 5개만
+    history = memory.chat_memory.messages[-5:]  # 최근 5개만
     history_text = "\n".join([
         f"User: {m.content}" if isinstance(m, HumanMessage) else f"Bot: {m.content}"
         for m in history

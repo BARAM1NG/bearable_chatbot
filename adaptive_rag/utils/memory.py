@@ -9,7 +9,7 @@ last_activity: dict[str, datetime] = {}
 SESSION_TIMEOUT = timedelta(minutes=5)
 
 # 유지할 최근 메시지 수
-WINDOW_SIZE = 3
+WINDOW_SIZE = 5
 
 def get_user_memory(user_id: str) -> ConversationBufferWindowMemory:
     now = datetime.now()

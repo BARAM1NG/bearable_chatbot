@@ -30,15 +30,12 @@ if 'last_activity' not in st.session_state:
 if 'timeout_message_shown' not in st.session_state:
     st.session_state.timeout_message_shown = False
 
-# 세션 타임아웃: 5분 이상 활동이 없으면 대화 기록 초기화
 if time.time() - st.session_state.last_activity > 300 and not st.session_state.timeout_message_shown:
-    # 대화 기록 초기화
     st.session_state.messages = []
     st.session_state.stage = "initial"
     st.session_state.category = None
     st.session_state.show_reset = False
 
-    # 시스템 메시지 형태로 안내 추가
     st.session_state.messages.append({
         "role": "assistant",
         "content": "💬 5분 동안 활동이 없어 챗봇 세션이 자동으로 종료되었습니다. 추가 문의가 있으시면 새 질문을 입력해주세요."
@@ -46,29 +43,37 @@ if time.time() - st.session_state.last_activity > 300 and not st.session_state.t
     st.session_state.timeout_message_shown = True
     st.rerun()
 
-st.markdown(
-    f"""
-    <div style="text-align:center; margin:2rem 0;">
-      <h1 style="font-size:24px; font-weight:bold; margin:1rem 0 0.3rem;">안녕하세요!</h1>
-      <h2 style="font-size:18px; margin:0 0 1rem;">마이폴리오 AI 챗봇입니다</h2>
-      <p><strong>문의 유형 안내</strong></p>
-      <ul style="text-align:left; display:inline-block; line-height:1.6;">
-        <li><strong>운영 문의</strong>: 제도, 졸업 요건, 교과 이수 기준 등</li>
-        <li><strong>과목 선택</strong>: 과목 소개, 게열/진로별 추천과목 정보 등</li>
-        <li><strong>입시 연계</strong>: 입시 전형 개념, 대학/학과 소개 정보 등</li>
-        <li><strong>도서 추천</strong>: 진로 맞춤 책 소개</li>
-        <li><strong>고객 문의</strong>: 시스템 오류 등</li>
-      </ul>
-      <p style="margin-top:1.5rem; font-size:13px; color:#888;">
-        ※ 챗봇의 답변은 참고용이며, 정확한 정보는 교육청 공식 채널을 통해 확인해 주세요.
-      </p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# ── 로고와 초기 안내 영역 ──
+logo_path = os.path.join(BASE_DIR, "asset", "mypolio.png")
+
+#         #   <h2 style="font-size:18px; margin:0 0 0.5rem;">마이폴리오 AI 챗봇입니다</h2>
+try:
+    col1, col2, col3 = st.columns([1.7, 1, 1.5])
+    with col2:
+        st.image(logo_path, width=100)
+
+    st.markdown(
+        """
+        <div style="text-align:center; margin:2rem 0;">
+          <h1 style="font-size:24px; font-weight:bold; margin:1rem 0 0.5rem;">안녕하세요! 마이폴리오 챗봇입니다!</h1>
+          <p><strong>문의 유형 안내</strong></p>
+          <ul style="text-align:left; display:inline-block; line-height:1.6;">
+            <li><strong>운영 문의</strong>: 제도, 졸업 요건, 교과 이수 기준 등</li>
+            <li><strong>과목 선택</strong>: 과목 소개, 계열/진로별 추천 과목 정보 등</li>
+            <li><strong>입시 정보</strong>: 입시 전형 개념, 대학/학과 소개 정보 등</li>
+            <li><strong>도서 추천</strong>: 진로 맞춤 책 소개</li>
+            <li><strong>고객 문의</strong>: 챗봇 사용법, 시스템 오류 등</li>
+          </ul>
+          <p style="margin-top:1.5rem; font-size:13px; color:#888;">
+            ※ 챗봇의 답변은 참고용이며, 정확한 정보는 교육청 공식 채널에서 확인해 주세요.
+          </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 except FileNotFoundError:
-    st.warning("로고 이미지를 찾을 수 없습니다:")
+    st.warning("로고 이미지를 찾을 수 없습니다.")
 
 # 하단 우측 고정 라이선스 및 출처 표시
 st.markdown(
@@ -121,10 +126,12 @@ def handle_category_selection(category_name):
         st.session_state.messages.append({"role": "user", "content": category_name})
         st.session_state.messages.append({
             "role": "assistant",
-            "content": f"'{category_name}' 관련 문의는 [링크](myfolio.channel.io)를 통해 전달해주세요."
+            "content": f"'{category_name}' 관련 문의는 [myfolio.channel.io](https://myfolio.channel.io)를 이용해주세요."
         })
-        js_open = "<script>window.open('myfolio.channel.io','_blank');</script>"
-        st.markdown(js_open, unsafe_allow_html=True)
+        st.markdown(
+            '<a href="https://myfolio.channel.io" target="_blank"> myfolio.channel.io로 이동하기</a>',
+            unsafe_allow_html=True
+        )
         st.session_state.stage = "initial"
     else:
         st.session_state.stage = "chatting"

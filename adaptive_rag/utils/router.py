@@ -54,15 +54,7 @@ Use the following routing rules:
 
 - If the question asks for book recommendations or summaries related to specific majors, subjects, or academic interests, use the **search_book** tool.
 
-- If the question is about how to use the chatbot or about issues related to the MyFolio(마이폴리오) service, use the **search_service** tool.  
-  This includes questions about or related to MyFolio’s features such as:  
-  - 세부능력 및 특기사항 추천 서비스  
-  - 생활기록부 로드맵  
-  - 독서 추천  
-    Examples of questions that fall into this category:  
-  - “세부능력 및 특기사항 추천 서비스 결제했는데 결과를 어디서 볼 수 있어?”  
-  - “생활기록부 로드맵 어떻게 사용하는거야?”  
-  - “생활기록부 로드맵 금액별로 어떻게 다른거야?”
+- 맥락을 고려하여서, 고등학교 과목에 대한 질문이라면 serch_subject 툴을 사용하고, 대학 전공에 대한 질문이라면 search_admission 툴을 사용합니다.
 
 Always choose the single most relevant tool that best matches the user's intent.
 """)
@@ -102,7 +94,7 @@ def run_tool_and_get_output(question: str) -> dict:
         "output": output
     }
 
-url = "https://raw.githubusercontent.com/bdajiny/slang-dictionary/refs/heads/main/slang_dict.json"
+url = "https://raw.githubusercontent.com/BARAM1NG/bearable_chatbot/refs/heads/main/vector_store/slang_dict.json"
 response = requests.get(url)
 raw_text = response.text
 slang_dict = json.loads(raw_text) # JSON 문자열을 파싱하여 딕셔너리로 변환!

@@ -29,7 +29,7 @@ def slangword_translate(text: str, slang_dict: dict) -> str:
     # 2-1) 키들을 길이 내림차순으로 정렬 (긴 키가 먼저 매칭되도록)
     sorted_slangs = sorted(slang_dict.keys(), key=len, reverse=True)
     escaped_keys  = [re.escape(s) for s in sorted_slangs]
-    combined_re = re.compile(r'\b(' + '|'.join(escaped_keys) + r')\b')
+    combined_re = re.compile('(' + '|'.join(escaped_keys) + ')')
 
     # 2-2) 치환 콜백: 매칭된 키(found) → "(found/formal)" 형태로 리턴
     def _repl(m: re.Match) -> str:
@@ -123,17 +123,14 @@ def replace_slang_word(text: str, slang_dict: dict) -> dict:
 
 # 부경대로 실험
 if __name__ == "__main__":
-    # 예시 슬랭 사전
-    slang_dict = {
-        "ㄱㅅ": "감사합니다",
-        "ㅎㅇ": "안녕하세요",
-        "ㅈㅅ": "죄송합니다",
-        "경대" : "경북대학교",
-        "성대" : "성균관대학교",
-    }
+
+    url = "https://raw.githubusercontent.com/BARAM1NG/bearable_chatbot/refs/heads/main/vector_store/slang_dict.json"
+    response = requests.get(url)
+    raw_text = response.text
+    slang_dict = json.loads(raw_text) # JSON 문자열을 파싱하여 딕셔너리로 변환!
 
     # 테스트 문장
-    test_text = "경대에 대해 알려주세요"
+    test_text = "부산외대에 대해 알려줘"
 
     result = replace_slang_word(test_text, slang_dict)
     print(result)  # {'question': '안녕하세요! 감사합니다 안녕하세요 죄송합니다'}

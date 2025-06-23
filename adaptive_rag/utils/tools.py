@@ -37,7 +37,7 @@ pinecone_policy = PineconeVectorStore.from_documents(
 )
 
 # 2. Pinecone 리트리버를 LangChain retriever로 감싸기
-policy_retriever = pinecone_policy.as_retriever(search_kwargs={"k": 5})
+policy_retriever = pinecone_policy.as_retriever(search_kwargs={"k": 6})
 
 compression_retriever_policy = ContextualCompressionRetriever(
     base_compressor=compressor, base_retriever=policy_retriever
@@ -69,7 +69,7 @@ pinecone_subject = PineconeVectorStore.from_documents(
 )
 
 # 2. Pinecone 리트리버를 LangChain retriever로 감싸기
-subject_retriever = pinecone_subject.as_retriever(search_kwargs={"k": 5})
+subject_retriever = pinecone_subject.as_retriever(search_kwargs={"k": 6})
 
 compression_retriever_subject = ContextualCompressionRetriever(
     base_compressor=compressor, base_retriever=subject_retriever
@@ -89,6 +89,7 @@ def search_subject(query: str) -> List[Document]:
         return docs
     return [Document(page_content="관련 정보를 찾을 수 없습니다.")]
 
+admission_compressor = CohereRerank(model="rerank-multilingual-v3.0",top_n=7)
 
 # 입시 정보 검색
 pinecone_admission = PineconeVectorStore.from_documents(
@@ -100,21 +101,21 @@ pinecone_admission = PineconeVectorStore.from_documents(
 )
 
 # 2. Pinecone 리트리버를 LangChain retriever로 감싸기
-admission_retriever = pinecone_admission.as_retriever(search_kwargs={"k": 20})
+admission_retriever = pinecone_admission.as_retriever(search_kwargs={"k": 30})
 
 compression_retriever_admission = ContextualCompressionRetriever(
-    base_compressor=compressor, base_retriever=admission_retriever
+    base_compressor=admission_compressor, base_retriever=admission_retriever
 )
 
 # 입시 점보 검색 tool 정의
 @tool
 def search_admission(query: str) -> List[Document]:
     """
-    Securely search and access information related to college admissions in the context of the High School Credit System,  
-    including university overviews, academic majors, academic tracks (계열), and admission procedures.
-
-    To maintain clarity and relevance, use this tool only for questions about college and major selection,  
-    such as introductions to specific universities, departments, or entrance examination methods.
+    Search and access detailed information related to college admissions under the High School Credit System,
+    especially focusing on university departments and majors. This includes what each major typically teaches,
+    college overviews (location, offered programs, general info), and explanations of admissions-related terminology.
+    
+    Use this tool for queries about selecting a major or university, understanding admission systems, or learning about specific departments.
     """
 
     docs = compression_retriever_admission.invoke(query)
@@ -165,7 +166,7 @@ pinecone_service = PineconeVectorStore.from_documents(
 )
 
 # 2. Pinecone 리트리버를 LangChain retriever로 감싸기
-service_retriever = pinecone_service.as_retriever(search_kwargs={"k": 5})
+service_retriever = pinecone_service.as_retriever(search_kwargs={"k": 1})
 
 # 3. 리랭커를 포함한 리트리버 생성
 compression_retriever_service = ContextualCompressionRetriever(
@@ -180,6 +181,11 @@ def search_service(query: str) -> List[str]:
     including how to use the chatbot and how to resolve issues related to the Myfolio service.
 
     Use this tool only for service-related queries, such as usage instructions or customer support requests.
+    If the question is about how to use the chatbot or about issues related to the MyFolio(마이폴리오) service, use the **search_service** tool.  
+    This includes questions about MyFolio’s features, such as:
+     - ‘세부능력 및 특기사항’ 추천 서비스
+     - 생활기록부 기반 로드맵 제공
+     - 개인 맞춤형 독서 추천
     """
 
     docs = compression_retriever_service.invoke(query)
