@@ -88,9 +88,11 @@ st.markdown(
         line-height: 1.2;
         z-index: 999;
     ">
-        © 2024 Smilegate AI. Korean UnSmile Dataset 및 baseline 모델은  
+        본 챗봇은 경희대학교x베어러블 산학협력 프로젝트로 제작되었습니다.  
+        일부 데이터 및 모델은  
         <a href="https://github.com/smilegate-ai/korean_unsmile_dataset" target="_blank" style="color: #888888; text-decoration: underline;">
-        GitHub 저장소</a>에서 Apache License 2.0 하에 공개되어 있습니다.
+        Smilegate AI의 공개 GitHub 저장소</a>의 자료를 활용했으며,  
+        Apache License 2.0 하에 사용됩니다.
     </div>
     """,
     unsafe_allow_html=True

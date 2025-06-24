@@ -41,7 +41,7 @@ div[data-testid="stChatMessage"][aria-label^="assistant"] .stChatMessageContent 
     font-size: 16px; /* 버튼 글꼴 크기 */
     font-weight: bold; /* 버튼 글꼴 굵게 */
     color: white; /* 버튼 글꼴 색상 (흰색) */
-    background-color: #aa8dc3; /* 버튼 배경색 (선명한 보라색) */
+    background-color: #6165FF; /* 버튼 배경색 (선명한 보라색) */
     transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* 배경색 및 그림자 변경 시 부드러운 전환 효과 */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 버튼 그림자 효과 */
     width: 100%; /* 버튼이 컬럼 내에서 전체 너비를 차지하도록 설정 */

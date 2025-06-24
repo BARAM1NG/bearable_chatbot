@@ -68,3 +68,14 @@ style.css, mypolio.png가 프로젝트 구조 내에 있어야 정상 렌더링�
 
 ## 기타
 '고객 문의' 선택 시 외부 채널인 myfolio.channel.io로 유도됩니다
+
+## 라이선스 표기
+
+본 프로젝트는 시연 단계에서는 챗봇 인터페이스 하단에 라이선스 문구를 표기하였으며,  
+실제 서비스 도입 시에는 **마이폴리오 내 푸터 영역에 아래 문구를 추가**하는 방식으로 적용될 예정입니다.
+
+© 2024 Smilegate AI. Korean UnSmile Dataset 및 baseline 모델은  
+[GitHub 저장소](https://github.com/smilegate-ai/korean_unsmile_dataset)에서 Apache License 2.0 하에 공개되어 있습니다.
+
+※ 본 프로젝트는 Smilegate AI와 무관한 **경희대학교 학생 프로젝트**이며,  
+Smilegate의 Korean UnSmile Dataset 및 baseline 모델을 라이선스에 따라 활용하였습니다.
