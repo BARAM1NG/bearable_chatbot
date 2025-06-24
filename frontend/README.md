@@ -11,7 +11,7 @@
 
 ## 웹 진입 화면
 
-<img src="https://raw.githubusercontent.com/BARAM1NG/bearable_chatbot/67dcb3433c126e5964a6e8fc9b4729556060fbd4/frontend/asset/screenshot.png" width="500">
+<img src="https://github.com/BARAM1NG/bearable_chatbot/blob/018c770fd74225dcd2c569d1f512f338fe9d8054/frontend/asset/screenshot.png" width="500">
 
 > 사용자가 처음 진입하면 위와 같은 카테고리 선택 인터페이스가 표시되며, Streamlit 기반의 챗 인터페이스로 이어집니다.
 
