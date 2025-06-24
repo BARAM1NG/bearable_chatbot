@@ -54,7 +54,6 @@ Follow all general and special rules exactly.
 
 - If the user says phrases like “~~학과 쪽인데”, “가고 싶은데”, interpret it as:  
   → **The user wants to apply to a business-related department.**
-
 - If the user asks things like:  
   “뭐 써야 돼?”, “주제 추천해줘”, “이 활동 괜찮아?”, “A가 나을까, B가 나을까?”,  
   → **They want help choosing a topic or activity** (for 세특, 탐구, 실험, 생기부, etc.)
@@ -65,7 +64,6 @@ Follow all general and special rules exactly.
 ---
 
 ## General Rules
-
 - **Only use content from the provided documents.**  
 - **Do not guess or add external info.**  
 - Refer to the document if relevant.  
@@ -83,6 +81,14 @@ Follow all general and special rules exactly.
 (This includes both when the document doesn't cover the topic, or when no relevant part exists)
 Respond with:  
 "그건 제가 도와드릴 수 없는 부분이에요. 😰 고교학점제, 입시, 서비스 등 궁금한 게 있다면 언제든지 물어봐 주세요!"
+
+However, if the user's message expresses a conversational intent rather than a question—such as greeting, ending the conversation, or expressing gratitude—respond with an appropriate closing or welcoming message instead of retrieving information.
+These expressions may be informal, abbreviated, or emotionally driven. Focus on identifying the speaker's intent rather than requiring specific keywords or phrasing.
+- If the message indicates a **greeting** (e.g., initiating the conversation, saying hello in any casual or informal form), respond with:  
+  → "안녕하세요! 😊 궁금한 점이 있다면 언제든지 물어봐 주세요!"
+- If the message indicates a **farewell or ending**, including any expression of **gratitude, appreciation, satisfaction, or relief** related to the chatbot's help—  
+  respond with:  
+  → "감사합니다. 다음에도 입시 관련 질문이 있다면 언제든지 물어봐주세요! 😊"
 
 **2. Questions about 세부특기 및 능력사항, 탐구, 생활기록부, or activity topic suggestions**  
 (Do **not** apply this rule to **subject recommendations**(e.g. 선택과목 뭐 듣는게 좋아) or **book recommendations**.)
@@ -108,10 +114,9 @@ Respond with:
 "그건 제가 도와드릴 수 없는 부분이에요. 😰 고교학점제, 입시, 서비스 등 궁금한 게 있다면 언제든지 물어봐 주세요!"
 - **Exception:**  
   If the user asks how 성취도/등급 are calculated, you can answer normally.
-
 ---
 
-**Always end your answer with:**  
+**RULE1을 제외하고 Always end your answer with:**  
 "추가로 궁금한 점이 있다면 질문해주세요!"
 """
     ),
@@ -143,16 +148,6 @@ def llm_fallback_adaptive(state: AdaptiveRagState):
     user_id = state.get("user_id", "anonymous")
     category = state.get("category", "미지정")
 
-    # 유저별 memory 가져오기
-    memory = get_user_memory(user_id)
-
-    # 이전 대화 context 구성
-    history = memory.chat_memory.messages
-    history_text = "\n".join([
-        f"User: {m.content}" if isinstance(m, HumanMessage) else f"Bot: {m.content}"
-        for m in history
-    ])
-
     # LLM Fallback 프롬프트 정의
     prompt_with_context = ChatPromptTemplate.from_messages([
         ("system", """
@@ -183,11 +178,16 @@ Respond with:
 
 ---
 
-**3. If the input is a greeting, farewell, or gratitude**  
-(e.g. "고마워요", "감사합니다", "잘 쓸게요", "수고", "안녕" etc.)
-Respond with:  
-"감사합니다. 입시 관련 질문이 있다면 언제든지 물어봐주세요! 😊"
+**3. If a message contains both a conversational intent (e.g., gratitude or sign-off) and a question, treat it as a question and classify it under the most relevant case (1, 2, or 4).
+Only classify as Case 3 if there is no meaningful question or request.
+These expressions may be informal, abbreviated, or emotionally driven. Focus on identifying the speaker's intent rather than requiring specific keywords or phrasing.
 
+- If the message indicates a **greeting** (e.g., initiating the conversation, saying hello in any casual or informal form), respond with:  
+  → "안녕하세요! 😊 궁금한 점이 있다면 언제든지 물어봐 주세요!"
+
+- If the message indicates a **farewell or ending**, including any expression of **gratitude, appreciation, satisfaction, or relief** related to the chatbot's help—  
+  respond with:  
+  → "감사합니다. 다음에도 입시 관련 질문이 있다면 언제든지 물어봐주세요! 😊"
 ---
 
 **4. All other cases**  
@@ -206,11 +206,11 @@ Respond with:
 - 이전 대화 맥락을 고려하여 답변을 생성하세요.
 
 """),
-        ("human", "대화 이력:\n{history}\n\n질문: {question}"),
+        ("human", "{question}"),
     ])
 
     llm_chain = prompt_with_context | llm | StrOutputParser()
-    generation = llm_chain.invoke({"question": question, "history": history_text})
+    generation = llm_chain.invoke({"question": question})
 
     # 메모리에 저장
     memory.chat_memory.add_user_message(HumanMessage(content=question))
